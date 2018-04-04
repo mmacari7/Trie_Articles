@@ -23,16 +23,14 @@ class TrieNode {
 }
 
 function readInCompanies(filepath) {
-    //TODO
-    //Look at Huffman Codes readIn for reference
     if (filepath === '')
         filepath = './companies.dat';
     try {
         return fs.readFileSync(filepath, 'utf8')
-                 .split('\r\n');
+                 .split(/\r?\n/);
     }
     catch( error) {
-        return "The file doesn't exist";
+        return "The companies.dat file doesn't exist";
     }
 }
 
@@ -45,6 +43,15 @@ function readInArticles() {
 
 function main() {
     //Read in companies and make list of them
+    const folderPath = prompt('Enter the path to your "companies.dat" to be loaded or nothing if "companies.dat" is in your current directory: ');
+    let companies = readInCompanies(folderPath);
+    if(companies === "The companies.dat file doesn't exist") {
+        console.log("The companies.dat file doesn't exist");
+        return;
+    }
+    companies = companies.map(company => company.split(/\t/));
+    console.log(companies);
+
     //Create root trie node
     // For each company in list add to trie root
 
