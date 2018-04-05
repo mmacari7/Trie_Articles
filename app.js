@@ -5,19 +5,34 @@ var prompt = require('prompt-sync')();
 var fs = require('fs');
 
 class TrieNode {
-    constructor(char){
-        this.char = char;
+    constructor(){
         this.children = {};
-        this.wordEnd = false; // May take out if not needed
-        this.relvance = null;
+        this.isWordEnd = false; 
+    }
+}
+class Trie {
+    constructor(){
+        this.root = new TrieNode();
     }
 
-    add(){
-        //TODO
+    add(word){
+        let ptr = this.root;
+        for (let char of word) {
+            if (!ptr.children.hasOwnProperty(char))
+                ptr.children[char] = new TrieNode();
+            ptr = ptr.children[char];
+        }
+        ptr.isWordEnd = true;
     }
 
-    find(){
-        //TODO
+    find(word){
+        let ptr = this.root;
+        for (let char of word) {
+            if(!ptr.children.hasOwnProperty(char))
+                return false;
+            ptr = ptr.children[char];
+        }
+        return ptr.isWordEnd;
     }
 
 }
@@ -50,10 +65,16 @@ function main() {
         return;
     }
     companies = companies.map(company => company.split(/\t/));
-    console.log(companies);
+    //console.log(companies);
 
     //Create root trie node
+    let t = new Trie();
+
     // For each company in list add to trie root
+    companies.forEach(companie => 
+        companie.forEach(word => t.add(word))
+    );
+    console.log("Added all companie names into Trie")
 
     //readInArticle
     //find relevance and total word count for words in article
