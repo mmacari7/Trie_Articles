@@ -25,16 +25,20 @@ class Trie {
         ptr.parentIndex = parentIndex;
     }
 
-    find(word) {
-        let ptr = this.root;
+    find(word, root = this.root) {
+        let ptr = root;
         for (let char of word) {
             if (!ptr.children.hasOwnProperty(char))
                 return -1;
             ptr = ptr.children[char];
         }
+        //console.log(ptr.children[' ']);
+        
+        if(ptr.parentIndex === -1 && ptr.children.hasOwnProperty(' '))
+            return ptr.children[' '];
+
         return ptr.parentIndex;
     }
-
 }
 
 function readInCompanies(filepath) {
@@ -81,26 +85,36 @@ function main() {
     
     //Create root trie node
     let t = new Trie();
-
     // For each company in list add to trie root
     companies.forEach((company,i) =>
         company.forEach(word => t.add(word,i))
     );
-    console.log("Added all company names into Trie")
+    //console.log("Added all company names into Trie")
 
     //readInArticle
     //How do we do this
     //console.log(companies[t.find('Amazon Web Services')][0]);
     //let s = 'Johnson and Johnson'.split(' ');
+    let s = 'Amazon Amazon Web Services'.split(' ');
+    console.log(s);
+    let ind = -1;
+    s.forEach(w => {
+        if(ind !== null && typeof(ind) === 'object')
+            ind = t.find(w,ind);
+        else
+            ind = t.find(w);
+        if(typeof(ind) === 'number' && ind !== -1)
+            console.log(companies[ind][0])
+    })
     //console.log(s);
-    let article = prompt('Enter a sentence: ')
+    /*let article = prompt('Enter a sentence: ')
                     .split(' ')
                     .forEach(w => { 
                         let ind = t.find(w);
                         console.log(w,ind);
                         if (ind !== -1)
                             console.log(companies[ind][0]);
-                    });
+                    });*/
                     
 
     //find relevance and total word count for words in article
