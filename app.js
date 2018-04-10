@@ -8,6 +8,7 @@ class TrieNode {
     constructor(parentIndex = -1 ) {
         this.children = {};
         this.parentIndex = parentIndex;
+        this.isEnd = false;
     }
 }
 class Trie {
@@ -23,21 +24,23 @@ class Trie {
             ptr = ptr.children[char];
         }
         ptr.parentIndex = parentIndex;
+        ptr.isEnd = true;
     }
 
     find(word, root = this.root) {
         let ptr = root;
+        //console.log('ptr:',ptr);
         for (let char of word) {
             if (!ptr.children.hasOwnProperty(char))
-                return -1;
+                return [-1];
             ptr = ptr.children[char];
         }
         //console.log(ptr.children[' ']);
         
-        if(ptr.parentIndex === -1 && ptr.children.hasOwnProperty(' '))
-            return ptr.children[' '];
+        if(ptr.children.hasOwnProperty(' '))
+            return [ptr.parentIndex, ptr.children[' ']];
 
-        return ptr.parentIndex;
+        return [ptr.parentIndex];
     }
 }
 
@@ -95,17 +98,29 @@ function main() {
     //How do we do this
     //console.log(companies[t.find('Amazon Web Services')][0]);
     //let s = 'Johnson and Johnson'.split(' ');
-    let s = 'Amazon Amazon Web Services'.split(' ');
+    let s = 'Amazon Services WTF Johnson and Johnson Twitch Amazon Johnson'.split(' ');
     console.log(s);
     let ind = -1;
-    s.forEach(w => {
-        if(ind !== null && typeof(ind) === 'object')
-            ind = t.find(w,ind);
-        else
-            ind = t.find(w);
-        if(typeof(ind) === 'number' && ind !== -1)
-            console.log(companies[ind][0])
-    })
+    let myObj = null;
+
+    for (let index = 0; index < s.length; index++) {
+        const elem = s[index];
+        let temp = t.find(elem);
+        console.log('1 word:', elem);
+        if(temp.length == 2 && index < s.length-1 ){
+            let q = s.slice(index, index + 2).join(' ');
+            //console.log(q);
+            let x = t.find(q);
+            console.log('2 words:', q);
+            if (x.length == 2 && index < s.length-2){
+                let taco = s.slice(index, index + 3).join(' ');
+                let y = t.find(taco);
+                console.log('3 words:', taco);
+            }
+        }
+        //console.log(temp);
+    }
+
     //console.log(s);
     /*let article = prompt('Enter a sentence: ')
                     .split(' ')
