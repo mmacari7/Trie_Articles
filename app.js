@@ -5,7 +5,7 @@ var prompt = require('prompt-sync')();
 var fs = require('fs');
 
 class TrieNode {
-    constructor(parentIndex = -1 ) {
+    constructor(parentIndex = -1) {
         this.children = {};
         this.parentIndex = parentIndex;
         this.isEnd = false;
@@ -36,8 +36,8 @@ class Trie {
             ptr = ptr.children[char];
         }
         //console.log(ptr.children[' ']);
-        
-        if(ptr.children.hasOwnProperty(' '))
+
+        if (ptr.children.hasOwnProperty(' '))
             return [ptr.parentIndex, ptr.children[' ']];
 
         return [ptr.parentIndex];
@@ -49,24 +49,36 @@ function readInCompanies(filepath) {
         filepath = './companies.dat';
     try {
         return fs.readFileSync(filepath, 'utf8')
-                .split(/\r?\n/)
-                .map(company => company.split(/\t/))
-                .map(c => c.map(w => w.replace(/[^A-Za-z0-9 ]/g, '')));
-            
+            .split(/\r?\n/)
+            .map(company => company.split(/\t/))
+            .map(c => c.map(w => w.replace(/[^A-Za-z0-9 ]/g, '')));
     }
     catch (error) {
         return "The companies.dat file doesn't exist";
     }
 }
 
-function readInArticles() {
-    //TODO: 
+function readInArticles(filepath) {
     //Open file, scan words for company relevance and total word count
-    let article = fs.readFileSync('article.dat', 'utf8')
-        .split(' ');
+    if (filepath === '')
+        filepath = './article.dat'
+    try {
+        return fs.readFileSync(filepath, 'utf8')
+            .split(/[\r\n\t ]/g)
+            .map(w => w.replace(/[^A-Za-z0-9 ]/g, ''));
+    }
+    catch (error) {
+        return "The article doesn't exist";
+    }
 }
 
-function printResult(companies, totalWords, trieRoot) {
+function printResult(companies, totalWords, hitCount) {
+    let maxCompanyNameLength = 0;
+    for (let i = 0; i < companies.length; i++) {
+        maxCompanyNameLength = maxCompanyNameLength > companies[i][0].length ? maxCompanyNameLength : companies[i][0].length;
+    }
+    console.log(maxCompanyNameLength);
+
     //TODO:
     /*Make a function that prints/saves to file
       Company   Hit Count   Relevance
@@ -74,6 +86,44 @@ function printResult(companies, totalWords, trieRoot) {
       Total     all hitcnt  allRelevance
       Total Words   totalWords
     */
+}
+
+function parseArticle(article, numOfCompanies, t) {
+    const hitCount = Array.apply(null, Array(numOfCompanies)).map(Number.prototype.valueOf, 0);
+    let totalWords = 0;
+
+    for (let index = 0; index < article.length; index++) {
+        const oneWord = t.find(article[index]);
+
+        if (oneWord.length == 2 && index < article.length - 1) {
+            const twoWords = t.find(article.slice(index, index + 2).join(' '));
+
+            if (twoWords.length == 2 && index < article.length - 2) {
+
+                const threeWords = t.find(article.slice(index, index + 3).join(' '));
+                if (threeWords[0] !== -1) {
+                    hitCount[threeWords[0]]++;
+                    totalWords++; // What do we do with this
+                    index += 2;
+                    continue;
+                }
+            }
+            if (twoWords[0] !== -1) {
+                hitCount[twoWords[0]]++;
+                totalWords++; // What do we do with this
+                index++;
+                continue;
+            }
+        }
+        if (oneWord[0] !== -1) {
+            hitCount[oneWord[0]]++;
+        }
+        totalWords++;
+    }
+    console.log('hitCount:', hitCount);
+    console.log('TotalWords:', totalWords);
+
+    return [hitCount, totalWords];
 }
 
 function main() {
@@ -84,60 +134,29 @@ function main() {
         console.log("The companies.dat file doesn't exist");
         return;
     }
-    //console.log(companies);
-    
+
     //Create root trie node
     let t = new Trie();
-    // For each company in list add to trie root
-    companies.forEach((company,i) =>
-        company.forEach(word => t.add(word,i))
+
+    // For each company in list add to trie 
+    companies.forEach((company, i) =>
+        company.forEach(word => t.add(word, i))
     );
-    //console.log("Added all company names into Trie")
 
-    //readInArticle
-    //How do we do this
-    //console.log(companies[t.find('Amazon Web Services')][0]);
-    //let s = 'Johnson and Johnson'.split(' ');
-    let s = 'Amazon Services WTF Johnson and Johnson Twitch Amazon Johnson'.split(' ');
-    console.log(s);
-    let ind = -1;
-    let myObj = null;
-
-    for (let index = 0; index < s.length; index++) {
-        const elem = s[index];
-        let temp = t.find(elem);
-        console.log('1 word:', elem);
-        if(temp.length == 2 && index < s.length-1 ){
-            let q = s.slice(index, index + 2).join(' ');
-            //console.log(q);
-            let x = t.find(q);
-            console.log('2 words:', q);
-            if (x.length == 2 && index < s.length-2){
-                let taco = s.slice(index, index + 3).join(' ');
-                let y = t.find(taco);
-                console.log('3 words:', taco);
-            }
-        }
-        //console.log(temp);
+    //Read in the Article
+    const articlePath = prompt('Enter the path to your article to be loaded or nothing if "article.dat" is in your current directory: ');
+    const article = readInArticles(articlePath);
+    if (article === "The article doesn't exist") {
+        console.log("The article doesn't exist");
+        return;
     }
 
-    //console.log(s);
-    /*let article = prompt('Enter a sentence: ')
-                    .split(' ')
-                    .forEach(w => { 
-                        let ind = t.find(w);
-                        console.log(w,ind);
-                        if (ind !== -1)
-                            console.log(companies[ind][0]);
-                    });*/
-                    
-
-    //find relevance and total word count for words in article
+    //Find relevance and total word count for words in article
+    const [hitCount, totalWords] = parseArticle(article, companies.length, t);
 
     //Print Results
+    printResult(companies, totalWords, hitCount);
+
 }
 
 main();
-
-//TODO
-//
