@@ -1,5 +1,5 @@
 // Trie Articles
-// By: Jonathan Lafleur, Michael Macari and Anthony Rusignuolo
+// By: Jonathan Lafleur, Michael Macari, and Anthony Rusignuolo
 
 var prompt = require('prompt-sync')();
 var fs = require('fs');
@@ -29,17 +29,14 @@ class Trie {
 
     find(word, root = this.root) {
         let ptr = root;
-        //console.log('ptr:',ptr);
         for (let char of word) {
             if (!ptr.children.hasOwnProperty(char))
                 return [-1];
             ptr = ptr.children[char];
         }
-        //console.log(ptr.children[' ']);
-        
+
         if(ptr.children.hasOwnProperty(' '))
             return [ptr.parentIndex, ptr.children[' ']];
-
         return [ptr.parentIndex];
     }
 }
@@ -59,11 +56,23 @@ function readInCompanies(filepath) {
     }
 }
 
-function readInArticles() {
+function readInArticle(filepath) {
     //TODO: 
     //Open file, scan words for company relevance and total word count
-    let article = fs.readFileSync('article.dat', 'utf8')
-        .split(' ');
+    //still needs to consider the .... case or tha can be handled in the main loop
+
+    if (filepath === '')
+        filepath = './article.dat';
+    try {
+        return fs.readFileSync(filepath, 'utf8')
+            .replace(/\r\n\.[\.\n]*/g,"")
+            .replace(/\r|\n/g, " ")
+            .replace(/[^A-Za-z0-9 ]/g, "")
+            .split(/\s+/g);
+    }
+    catch (error) {
+        return "The article.dat file doesn't exist";
+    }
 }
 
 function printResult(companies, totalWords, trieRoot) {
@@ -74,6 +83,10 @@ function printResult(companies, totalWords, trieRoot) {
       Total     all hitcnt  allRelevance
       Total Words   totalWords
     */
+   var output = 'Company    Hit Count   Relevance\n';
+//    for (){
+
+//    };
 }
 
 function main() {
@@ -84,27 +97,23 @@ function main() {
         console.log("The companies.dat file doesn't exist");
         return;
     }
-    //console.log(companies);
     
-    //Create root trie node
     let t = new Trie();
-    // For each company in list add to trie root
     companies.forEach((company,i) =>
         company.forEach(word => t.add(word,i))
     );
-    //console.log("Added all company names into Trie")
-
-    //readInArticle
-    //How do we do this
-    //console.log(companies[t.find('Amazon Web Services')][0]);
-    //let s = 'Johnson and Johnson'.split(' ');
-    let s = 'Amazon Services WTF Johnson and Johnson Twitch Amazon Johnson'.split(' ');
+        
+    let s = readInArticle("");
     console.log(s);
     let ind = -1;
     let myObj = null;
+    let totalWords = 0;
 
     for (let index = 0; index < s.length; index++) {
         const elem = s[index];
+        if (elem == /\s+/g)
+            break;
+        totalWords++
         let temp = t.find(elem);
         console.log('1 word:', elem);
         if(temp.length == 2 && index < s.length-1 ){
@@ -113,7 +122,7 @@ function main() {
             let x = t.find(q);
             console.log('2 words:', q);
             if (x.length == 2 && index < s.length-2){
-                let taco = s.slice(index, index + 3).join(' ');
+                let taco = s.slice(index, index + 3).join(' '); //classic taco
                 let y = t.find(taco);
                 console.log('3 words:', taco);
             }
