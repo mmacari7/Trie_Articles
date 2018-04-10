@@ -110,14 +110,14 @@ function parseArticle(article, numOfCompanies, t) {
                 const threeWords = t.find(article.slice(index, index + 3).join(' '));
                 if (threeWords[0] !== -1) {
                     hitCount[threeWords[0]]++;
-                    totalWords++; // What do we do with this
+                    totalWords++; 
                     index += 2;
                     continue;
                 }
             }
             if (twoWords[0] !== -1) {
                 hitCount[twoWords[0]]++;
-                totalWords++; // What do we do with this
+                totalWords++;
                 index++;
                 continue;
             }
@@ -125,7 +125,8 @@ function parseArticle(article, numOfCompanies, t) {
         if (oneWord[0] !== -1) {
             hitCount[oneWord[0]]++;
         }
-        totalWords++;
+        if (!/a|an|and|the|or|but/.test(article[index]))
+            totalWords++;
     }
     // console.log('hitCount:', hitCount);
     // console.log('TotalWords:', totalWords);
@@ -163,7 +164,6 @@ function main() {
 
     //Print Results
     printResult(companies, totalWords, hitCount);
-
 }
 
 main();
