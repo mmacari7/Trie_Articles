@@ -8,7 +8,6 @@ class TrieNode {
     constructor(parentIndex = -1) {
         this.children = {};
         this.parentIndex = parentIndex;
-        this.isEnd = false;
     }
 }
 class Trie {
@@ -24,18 +23,15 @@ class Trie {
             ptr = ptr.children[char];
         }
         ptr.parentIndex = parentIndex;
-        ptr.isEnd = true;
     }
 
     find(word, root = this.root) {
         let ptr = root;
-        //console.log('ptr:',ptr);
         for (let char of word) {
             if (!ptr.children.hasOwnProperty(char))
                 return [-1];
             ptr = ptr.children[char];
         }
-        //console.log(ptr.children[' ']);
 
         if (ptr.children.hasOwnProperty(' '))
             return [ptr.parentIndex, ptr.children[' ']];
@@ -73,19 +69,29 @@ function readInArticles(filepath) {
 }
 
 function printResult(companies, totalWords, hitCount) {
-    let maxCompanyNameLength = 0;
+    let maxCompanyNameLength = 7;
     for (let i = 0; i < companies.length; i++) {
         maxCompanyNameLength = maxCompanyNameLength > companies[i][0].length ? maxCompanyNameLength : companies[i][0].length;
     }
-    console.log(maxCompanyNameLength);
 
-    //TODO:
-    /*Make a function that prints/saves to file
-      Company   Hit Count   Relevance
-      all names hit counts  relevance
-      Total     all hitcnt  allRelevance
-      Total Words   totalWords
-    */
+    console.log()
+    const c = 'Company'.padEnd(maxCompanyNameLength + 2);
+    const hc = 'Hit Count  ';
+    const r = 'Relevance';
+    console.log(c+hc+r);
+    console.log(''.padEnd((c+hc+r).length, '-')); 
+    let totalHitCount = 0;
+    for(let i=0; i < companies.length; i++) {
+        const cur_comp = companies[i][0].padEnd(maxCompanyNameLength + 2);
+        const hCi = hitCount[i].toString();
+        const cur_hc = hCi.padEnd(hc.length);
+        const cur_r = hitCount[i]/totalWords;
+        console.log(cur_comp + cur_hc + cur_r.toFixed(4));
+        totalHitCount += hitCount[i];
+    }
+    console.log(''.padEnd((c+hc+r).length, '-')); 
+    console.log('Total'.padEnd(maxCompanyNameLength + 2) + totalHitCount.toString().padEnd(hc.length) + (totalHitCount/totalWords).toFixed(4));
+    console.log('Total Words:',totalWords);
 }
 
 function parseArticle(article, numOfCompanies, t) {
