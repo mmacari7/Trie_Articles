@@ -8,7 +8,6 @@ class TrieNode {
     constructor(parentIndex = -1) {
         this.children = {};
         this.parentIndex = parentIndex;
-        this.isEnd = false;
     }
 }
 class Trie {
@@ -24,7 +23,6 @@ class Trie {
             ptr = ptr.children[char];
         }
         ptr.parentIndex = parentIndex;
-        ptr.isEnd = true;
     }
 
     find(word, root = this.root) {
@@ -61,9 +59,10 @@ function readInArticles(filepath) {
         filepath = './article.dat'
     try {
         return fs.readFileSync(filepath, 'utf8')
-                .split(/(\r?\n)*\./g)[0]
+                .split(/(\r?\n)+\./g)[0]
                 .split(/[\r\n\t ]/g)
-                .map(w => w.replace(/[^A-Za-z0-9 ]/g, ''));
+                .map(w => w.replace(/[^A-Za-z0-9 ]/g, ''))
+                .filter(w => w !== '');
     }
     catch (error) {
         return "The article doesn't exist";
@@ -71,23 +70,29 @@ function readInArticles(filepath) {
 }
 
 function printResult(companies, totalWords, hitCount) {
-    let maxCompanyNameLength = 0;
+    let maxCompanyNameLength = 7;
     for (let i = 0; i < companies.length; i++) {
         maxCompanyNameLength = maxCompanyNameLength > companies[i][0].length ? maxCompanyNameLength : companies[i][0].length;
     }
-    console.log(maxCompanyNameLength);
 
-    //TODO:
-    /*Make a function that prints/saves to file
-      Company   Hit Count   Relevance
-      all names hit counts  relevance
-      Total     all hitcnt  allRelevance
-      Total Words   totalWords
-    */
-   var output = 'Company    Hit Count   Relevance\n';
-//    for (){
-
-//    };
+    console.log()
+    const c = 'Company'.padEnd(maxCompanyNameLength + 2);
+    const hc = 'Hit Count  ';
+    const r = 'Relevance';
+    console.log(c+hc+r);
+    console.log(''.padEnd((c+hc+r).length, '-')); 
+    let totalHitCount = 0;
+    for(let i=0; i < companies.length; i++) {
+        const cur_comp = companies[i][0].padEnd(maxCompanyNameLength + 2);
+        const hCi = hitCount[i].toString();
+        const cur_hc = hCi.padEnd(hc.length);
+        const cur_r = hitCount[i]/totalWords;
+        console.log(cur_comp + cur_hc + cur_r.toFixed(4));
+        totalHitCount += hitCount[i];
+    }
+    console.log(''.padEnd((c+hc+r).length, '-')); 
+    console.log('Total'.padEnd(maxCompanyNameLength + 2) + totalHitCount.toString().padEnd(hc.length) + (totalHitCount/totalWords).toFixed(4));
+    console.log('Total Words:',totalWords);
 }
 
 function parseArticle(article, numOfCompanies, t) {
@@ -122,8 +127,8 @@ function parseArticle(article, numOfCompanies, t) {
         }
         totalWords++;
     }
-    console.log('hitCount:', hitCount);
-    console.log('TotalWords:', totalWords);
+    // console.log('hitCount:', hitCount);
+    // console.log('TotalWords:', totalWords);
 
     return [hitCount, totalWords];
 }
@@ -152,7 +157,6 @@ function main() {
         console.log("The article doesn't exist");
         return;
     }
-    console.log(article);
 
     //Find relevance and total word count for words in article
     const [hitCount, totalWords] = parseArticle(article, companies.length, t);
