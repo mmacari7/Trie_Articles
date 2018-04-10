@@ -54,15 +54,14 @@ function readInCompanies(filepath) {
 }
 
 function readInArticles(filepath) {
-    //Open file, scan words for company relevance and total word count
     if (filepath === '')
         filepath = './article.dat'
     try {
         return fs.readFileSync(filepath, 'utf8')
-                .split(/(\r?\n)+\./g)[0]
-                .split(/[\r\n\t ]/g)
-                .map(w => w.replace(/[^A-Za-z0-9 ]/g, ''))
-                .filter(w => w !== '');
+            .split(/(\r?\n)+\./g)[0]
+            .split(/[\r\n\t ]/g)
+            .map(w => w.replace(/'s|[^A-Za-z0-9 ]/g, ''))
+            .filter(w => w !== '');
     }
     catch (error) {
         return "The article doesn't exist";
@@ -79,20 +78,20 @@ function printResult(companies, totalWords, hitCount) {
     const c = 'Company'.padEnd(maxCompanyNameLength + 2);
     const hc = 'Hit Count  ';
     const r = 'Relevance';
-    console.log(c+hc+r);
-    console.log(''.padEnd((c+hc+r).length, '-')); 
+    console.log(c + hc + r);
+    console.log(''.padEnd((c + hc + r).length, '-'));
     let totalHitCount = 0;
-    for(let i=0; i < companies.length; i++) {
+    for (let i = 0; i < companies.length; i++) {
         const cur_comp = companies[i][0].padEnd(maxCompanyNameLength + 2);
         const hCi = hitCount[i].toString();
         const cur_hc = hCi.padEnd(hc.length);
-        const cur_r = hitCount[i]/totalWords;
+        const cur_r = hitCount[i] / totalWords;
         console.log(cur_comp + cur_hc + cur_r.toFixed(4));
         totalHitCount += hitCount[i];
     }
-    console.log(''.padEnd((c+hc+r).length, '-')); 
-    console.log('Total'.padEnd(maxCompanyNameLength + 2) + totalHitCount.toString().padEnd(hc.length) + (totalHitCount/totalWords).toFixed(4));
-    console.log('Total Words:',totalWords);
+    console.log(''.padEnd((c + hc + r).length, '-'));
+    console.log('Total'.padEnd(maxCompanyNameLength + 2) + totalHitCount.toString().padEnd(hc.length) + (totalHitCount / totalWords).toFixed(4));
+    console.log('Total Words:', totalWords);
 }
 
 function parseArticle(article, numOfCompanies, t) {
@@ -110,7 +109,7 @@ function parseArticle(article, numOfCompanies, t) {
                 const threeWords = t.find(article.slice(index, index + 3).join(' '));
                 if (threeWords[0] !== -1) {
                     hitCount[threeWords[0]]++;
-                    totalWords++; 
+                    totalWords++;
                     index += 2;
                     continue;
                 }
@@ -128,9 +127,6 @@ function parseArticle(article, numOfCompanies, t) {
         if (!/a|an|and|the|or|but/.test(article[index]))
             totalWords++;
     }
-    // console.log('hitCount:', hitCount);
-    // console.log('TotalWords:', totalWords);
-
     return [hitCount, totalWords];
 }
 
@@ -152,18 +148,25 @@ function main() {
     );
 
     //Read in the Article
-    const articlePath = prompt('Enter the path to your article to be loaded or nothing if "article.dat" is in your current directory: ');
-    const article = readInArticles(articlePath);
-    if (article === "The article doesn't exist") {
-        console.log("The article doesn't exist");
-        return;
-    }
+    do {
+        const articlePath = prompt('Enter the path to your article to be loaded, nothing if "article.dat" is in your current directory, or "q" or "quit" to exit: ');
+        if (articlePath == 'q' || articlePath == 'quit')
+            return;
+        const article = readInArticles(articlePath);
+        if (article === "The article doesn't exist") {
+            console.log("The article doesn't exist");
+            return;
+        }
 
-    //Find relevance and total word count for words in article
-    const [hitCount, totalWords] = parseArticle(article, companies.length, t);
+        console.log(article);
 
-    //Print Results
-    printResult(companies, totalWords, hitCount);
+
+        //Find relevance and total word count for words in article
+        const [hitCount, totalWords] = parseArticle(article, companies.length, t);
+
+        //Print Results
+        printResult(companies, totalWords, hitCount);
+    } while (true)
 }
 
 main();
