@@ -44,16 +44,17 @@ function readInCompanies(filepath) {
         return fs.readFileSync(filepath, 'utf8')
                  .split(/\r?\n/);
     }
-    catch( error) {
+    catch(error) {
         return "The companies.dat file doesn't exist";
     }
 }
 
 function readInArticles() {
-    //TODO: 
+    //TODO:
     //Open file, scan words for company relevance and total word count
-    let article = fs.readFileSync('article.dat', 'utf8')
-                    .split(' ');
+    let article = fs.readFileSync('article.dat', 'utf8').split(' ');
+
+
 }
 
 function main() {
@@ -74,7 +75,9 @@ function main() {
     companies.forEach(companie => 
         companie.forEach(word => t.add(word))
     );
-    console.log("Added all companie names into Trie")
+
+    //console.log(t);
+    console.log("Added all companie names into Trie");
 
     //readInArticle
     //find relevance and total word count for words in article
